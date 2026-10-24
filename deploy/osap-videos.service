@@ -1,0 +1,18 @@
+[Unit]
+Description=OSAP Vídeos (búsqueda y votación de YouTube)
+After=network-online.target mysql.service
+
+[Service]
+Type=simple
+User=ocw
+Group=ocw
+WorkingDirectory=/opt/osap-videos
+EnvironmentFile=/opt/osap-videos/.env
+ExecStart=/opt/osap-videos/.venv/bin/uvicorn app:app --host 127.0.0.1 --port 8400
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

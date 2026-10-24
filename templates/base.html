@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="es" translate="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <title>{% block title %}Vídeos · OSAP{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <span class="brand-mark">V</span>
+      <span class="brand-text"><strong>VÍDEOS</strong><small>OSAP</small></span>
+    </a>
+    <nav class="nav-group" aria-label="Navegación principal">
+      <p class="nav-label">Aplicativo</p>
+      <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">Buscar vídeos</a>
+      <a class="nav-link" href="{{ osap_url }}" target="_blank" rel="noopener">Abrir OSAP</a>
+    </nav>
+    <div class="sidebar-foot">
+      Aplicativo independiente de OSAP. Los vídeos pertenecen a sus autores y a YouTube.
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="breadcrumb">
+        <a href="{{ osap_url }}">OSAP</a>
+        {% if work_id %}<span aria-hidden="true"> / </span><a href="{{ osap_work_url }}">Obra</a>{% endif %}
+        <span aria-hidden="true"> / </span><span>Vídeos</span>
+      </div>
+      <div class="session">
+        {% if user %}
+          <span class="dot" aria-hidden="true"></span>
+          <span>{{ user_name }}</span>
+        {% else %}
+          <span>Sin sesión</span>
+        {% endif %}
+      </div>
+    </header>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+</body>
+</html>

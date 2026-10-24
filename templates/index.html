@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}{% if title %}{{ title }} · Vídeos{% else %}Buscar vídeos · OSAP{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page-head">
+  <div>
+    <p class="eyebrow">Vídeos de YouTube</p>
+    {% if title %}
+      <h1>{{ title }}</h1>
+      {% if composer %}<p class="meta-line">{{ composer }}</p>{% endif %}
+    {% else %}
+      <h1>Buscar vídeos</h1>
+    {% endif %}
+    <p class="lede">Encuentra interpretaciones, ensayos por cuerdas y material de estudio para esta obra. Los vídeos se ordenan por votos de la comunidad y por similitud con la búsqueda.</p>
+    {% if resource_id %}
+      <p class="meta-line"><span class="chip">Representación</span> <span class="chip gold">{{ voice_labels.get(voice, voice) }}</span></p>
+    {% endif %}
+  </div>
+</section>
+
+{% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
+{% if notice %}<div class="notice ok">{{ notice }}</div>{% endif %}
+{% if token and not user %}
+  <div class="notice warn">La sesión de OSAP no es válida o ha caducado. Puedes buscar, pero no votar.</div>
+{% elif not token %}
+  <div class="notice warn">Abre esta página desde la ficha de una obra en OSAP para votar con tu cuenta.</div>
+{% elif user and not resource_id %}
+  <div class="notice warn">Para votar, entra desde una representación concreta de la obra.</div>
+{% endif %}
+
+<section class="card search-card" aria-label="Búsqueda de vídeos">
+  <form method="post" action="/search">
+    <input type="hidden" name="work_id" value="{{ work_id }}">
+    <input type="hidden" name="resource_id" value="{{ resource_id }}">
+    <input type="hidden" name="token" value="{{ token }}">
+    <div class="form-grid">
+      <div class="field span-4">
+        <label for="title">Título de la obra</label>
+        <input id="title" name="title" type="text" value="{{ title }}" autocomplete="off" placeholder="Ej. Ave verum corpus">
+      </div>
+      <div class="field span-4">
+        <label for="composer">Compositor</label>
+        <input id="composer" name="composer" type="text" value="{{ composer }}" autocomplete="off" placeholder="Ej. Mozart">
+      </div>
+      <div class="field span-3">
+        <label for="voice">Voz o material</label>
+        <select id="voice" name="voice">
+          {% for item in voices %}
+            <option value="{{ item }}" {% if item == voice %}selected{% endif %}>{{ voice_labels[item] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field span-12">
+        <div class="form-actions">
+          <button class="btn btn-primary" type="submit">Buscar en YouTube</button>
+          <span class="hint">Se consultan resultados en directo. La búsqueda puede tardar unos segundos.</span>
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+
+{% if results %}
+  <div class="results-head">
+    <h2>Resultados</h2>
+    <span class="results-count">{{ results|length }} vídeos</span>
+  </div>
+  <section class="results" aria-label="Vídeos encontrados">
+    {% for r in results %}
+      <article class="card result">
+        <div>
+          <h3><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.video_title }}</a></h3>
+          <div class="result-meta">
+            <span>{{ r.channel }}</span>
+            <span class="sep">·</span>
+            <span class="badge">{{ r.material_label }}</span>
+            <span class="badge">{{ r.voice_label }}</span>
+            <span class="badge sim">Similitud {{ (r.similarity * 100)|round(0)|int }}%</span>
+          </div>
+          <div class="player" data-player hidden></div>
+        </div>
+        <div class="result-side">
+          <button class="btn btn-primary" type="button" data-play data-video="{{ r.video_id }}" data-title="{{ r.video_title }}">Reproducir aquí</button>
+          <a class="btn btn-secondary" href="{{ r.url }}" target="_blank" rel="noopener">Ver en YouTube</a>
+          {% if resource_id %}
+            <div class="vote-counts" aria-label="Votos">
+              <span><strong>{{ r.approved }}</strong> válidos</span>
+              <span><strong>{{ r.rejected }}</strong> no válidos</span>
+            </div>
+            <form method="post" action="/vote">
+              <input type="hidden" name="work_id" value="{{ work_id }}">
+              <input type="hidden" name="resource_id" value="{{ resource_id }}">
+              <input type="hidden" name="token" value="{{ token }}">
+              <input type="hidden" name="video_id" value="{{ r.video_id }}">
+              <input type="hidden" name="video_url" value="{{ r.url }}">
+              <input type="hidden" name="video_title" value="{{ r.video_title }}">
+              <input type="hidden" name="channel" value="{{ r.channel }}">
+              <input type="hidden" name="material_type" value="{{ r.material_type }}">
+              <input type="hidden" name="voice" value="{{ r.voice }}">
+              <input type="hidden" name="similarity_value" value="{{ r.similarity }}">
+              <input type="hidden" name="title" value="{{ title }}">
+              <input type="hidden" name="composer" value="{{ composer }}">
+              <div class="vote-row">
+                <button class="btn btn-vote {% if r.mine == 'approved' %}approved{% endif %}" type="submit" name="decision" value="approved" {% if not can_vote %}disabled title="Inicia sesión desde OSAP para votar"{% endif %}>Válido</button>
+                <button class="btn btn-vote {% if r.mine == 'rejected' %}rejected{% endif %}" type="submit" name="decision" value="rejected" {% if not can_vote %}disabled title="Inicia sesión desde OSAP para votar"{% endif %}>No válido</button>
+              </div>
+              {% if r.mine %}<p class="hint">Tu voto: {{ 'válido' if r.mine == 'approved' else 'no válido' }}</p>{% endif %}
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </section>
+{% elif searched %}
+  <div class="card empty">No se han encontrado vídeos. Prueba con menos palabras o con el título original de la obra.</div>
+{% endif %}
+
+<p class="footnote">Los resultados proceden de la API de YouTube. OSAP no aloja los vídeos. Los votos son por representación y por voz o material.</p>
+{% endblock %}

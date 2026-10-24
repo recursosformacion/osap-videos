@@ -1,0 +1,29 @@
+# Configuración del aplicativo de vídeos (copiar a config.yaml).
+# Secretos por entorno: YOUTUBE_API_KEY, DB_PASSWORD.
+db:
+  host: 127.0.0.1
+  port: 3306
+  user: osap2027
+  password: CAMBIAR
+  name: osap_videos
+
+server:
+  host: 127.0.0.1
+  port: 8400
+  public_url: http://localhost:8400
+
+auth:
+  base_url: http://127.0.0.1:8200
+
+module:
+  src: D:/Proyectos/AI_OSAP/ai_recogeYouTube/src
+
+youtube:
+  api_key_env: YOUTUBE_API_KEY
+
+osap:
+  public_url: http://osap-app
+  api_url: http://127.0.0.1:8001/api/v1
+
+
+
