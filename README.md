@@ -6,7 +6,7 @@ useful for that representation and voice.
 
 **Status: experimental technical preview.** It is deployed at
 `https://videos.openmusicrepository.com`, but it is not a finished product and it is not part of
-the coordinated OSAP `5.6.x` release train. Expect API, data model, and authentication changes.
+the coordinated OSAP `5.7.0` release; that release only adds links to this app. Expect API, data model, and authentication changes.
 
 ## What works
 
@@ -188,4 +188,5 @@ El script empaqueta la app y `ai-recogeYouTube`, actualiza `/opt/osap-videos`, i
 dependencias y reinicia `osap-videos.service`. No toca `config.yaml`, `.env`, MySQL ni nginx.
 El primer despliegue (base de datos, systemd, nginx y certificado) se hace una sola vez y se
 documenta en el historial operativo; las actualizaciones usan ese script.
+
 
