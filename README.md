@@ -116,9 +116,9 @@ Secrets live only in `/opt/osap-videos/.env` and `config.yaml`; neither is commi
 
 ## Versioning
 
-The application version is **0.2.2** and is independent from the coordinated OSAP version.
+The application version is **0.2.3** and is independent from the coordinated OSAP version.
 OSAP **5.7.0** (B) publishes the video entry points. The videos application itself remains
-**0.2.2** and experimental; the two versions are intentionally independent.
+**0.2.3** and experimental; the two versions are intentionally independent.
 
 ---
 
@@ -133,7 +133,7 @@ Desplegado como **preview técnica** en `https://videos.openmusicrepository.com`
 una pieza de producción equiparable a los cuatro servicios principales de OSAP: no tiene
 handoff de autenticación definitivo, ni moderación, ni copias de seguridad propias, ni SLA.
 
-La versión del aplicativo es **0.2.2**. OSAP **5.7.0** (B) publica los enlaces desde la
+La versión del aplicativo es **0.2.3**. OSAP **5.7.0** (B) publica los enlaces desde la
 plataforma; la versión de la app se mantiene independiente y experimental.
 
 ## Qué hace
