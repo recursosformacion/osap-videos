@@ -39,9 +39,9 @@
           <span>{{ user_name }}</span>
           <a class="session-link" href="/logout">Salir</a>
         {% else %}
-          <a class="session-link" href="{{ login_url }}" target="_blank" rel="noopener">Iniciar sesión</a>
+          <a class="session-link" href="{{ login_url }}">Iniciar sesión</a>
           <span aria-hidden="true">·</span>
-          <a class="session-link" href="{{ register_url }}" target="_blank" rel="noopener">Crear cuenta</a>
+          <a class="session-link" href="{{ register_url }}">Crear cuenta</a>
         {% endif %}
       </div>
     </header>

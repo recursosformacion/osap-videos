@@ -44,3 +44,18 @@ document.addEventListener("click", (event) => {
     if (!window.closed) window.location.href = fallback;
   }, 200);
 });
+
+const sessionHash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+const incomingToken = sessionHash.get("access_token");
+if (incomingToken) {
+  const body = new URLSearchParams({ access_token: incomingToken });
+  fetch("/auth/session", { method: "POST", body })
+    .then((response) => {
+      if (!response.ok) throw new Error("session");
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      window.location.reload();
+    })
+    .catch(() => {
+      window.location.href = "/login";
+    });
+}
