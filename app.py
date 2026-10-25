@@ -23,7 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
-APP_VERSION = "0.2.3"
+APP_VERSION = "0.2.4"
 LOGGER = logging.getLogger("osap_videos")
 sys.path.insert(0, str(BASE_DIR))
 
@@ -466,7 +466,13 @@ def search(
     user = public_user(token)
     counts = vote_counts(resource_id, str(user.get("user_id")) if user else None)
     results = enrich(raw, query, counts, voice)
-    notice = "" if results else "No se han encontrado vídeos para esta búsqueda."
+    if tokens(query):
+        results = [
+            item
+            for item in results
+            if float(item["text_similarity"]) > 0 or int(item["approved"]) > 0
+        ]
+    notice = "" if results else "No se han encontrado vídeos relacionados con esta búsqueda."
     return render(
         request,
         work_id=work_id,
