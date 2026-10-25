@@ -33,3 +33,14 @@ document.addEventListener("click", (event) => {
   event.preventDefault();
   play(button);
 });
+
+document.addEventListener("click", (event) => {
+  const closeLink = event.target.closest("[data-close-window]");
+  if (!closeLink) return;
+  event.preventDefault();
+  const fallback = closeLink.href;
+  window.close();
+  window.setTimeout(() => {
+    if (!window.closed) window.location.href = fallback;
+  }, 200);
+});

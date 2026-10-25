@@ -19,6 +19,7 @@
       <p class="nav-label">Aplicativo</p>
       <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">Buscar vídeos</a>
       <a class="nav-link" href="{{ osap_url }}" target="_blank" rel="noopener">Abrir OSAP</a>
+      <a class="nav-link" href="{{ osap_url }}" data-close-window>Cerrar ventana</a>
     </nav>
     <div class="sidebar-foot">
       Aplicativo independiente de OSAP. Los vídeos pertenecen a sus autores y a YouTube.

@@ -23,7 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.2.1"
 LOGGER = logging.getLogger("osap_videos")
 sys.path.insert(0, str(BASE_DIR))
 
@@ -76,7 +76,6 @@ from ai_recogeyoutube.global_search import VOICE_ALIASES, search_global
 
 DB = CONFIG["db"]
 AUTH_BASE = CONFIG["auth"]["base_url"]
-AUTH_PUBLIC_URL = str(CONFIG["auth"].get("public_url", "https://auth.openmusicrepository.com")).rstrip("/")
 PUBLIC_URL = CONFIG["server"]["public_url"]
 OSAP_URL = str(CONFIG.get("osap", {}).get("public_url", "https://app.openmusicrepository.com")).rstrip("/")
 OSAP_API_BASE = str(CONFIG.get("osap", {}).get("api_url", "http://127.0.0.1:8001/api/v1")).rstrip("/")
@@ -353,7 +352,8 @@ def render(
         "authenticated": bool(user),
         "can_vote": bool(user and resource_id),
         "osap_url": OSAP_URL,
-        "register_url": f"{AUTH_PUBLIC_URL}/auth/register",
+        "login_url": f"{OSAP_URL}/?auth=login",
+        "register_url": f"{OSAP_URL}/?auth=register",
         "version": APP_VERSION,
         "osap_work_url": f"{OSAP_URL}/obra/{work_id}" if work_id else OSAP_URL,
     }
