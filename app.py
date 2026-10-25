@@ -23,7 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
-APP_VERSION = "0.2.4"
+APP_VERSION = "0.3.0"
 LOGGER = logging.getLogger("osap_videos")
 sys.path.insert(0, str(BASE_DIR))
 
@@ -76,8 +76,8 @@ from ai_recogeyoutube.global_search import VOICE_ALIASES, search_global
 
 DB = CONFIG["db"]
 AUTH_BASE = CONFIG["auth"]["base_url"]
-AUTH_WEB_URL = str(CONFIG["auth"].get("web_url", "https://auth.openmusicrepository.com")).rstrip("/")
 PUBLIC_URL = CONFIG["server"]["public_url"]
+SESSION_COOKIE = "osap_videos_token"
 OSAP_URL = str(CONFIG.get("osap", {}).get("public_url", "https://app.openmusicrepository.com")).rstrip("/")
 OSAP_API_BASE = str(CONFIG.get("osap", {}).get("api_url", "http://127.0.0.1:8001/api/v1")).rstrip("/")
 
@@ -192,6 +192,47 @@ def display_name(user: dict[str, Any] | None) -> str:
     if not user:
         return ""
     return str(user.get("name") or user.get("nickname") or user.get("email") or "")
+
+
+def safe_next(value: str) -> str:
+    return value if value.startswith("/") and not value.startswith("//") else "/"
+
+
+def auth_error(response: httpx.Response) -> str:
+    try:
+        payload = response.json()
+    except ValueError:
+        return "No se pudo completar la operación."
+    detail = payload.get("detail") if isinstance(payload, dict) else None
+    if isinstance(detail, str):
+        return detail
+    return "No se pudo completar la operación."
+
+
+def set_session_cookie(response: RedirectResponse, request: Request, token: str) -> None:
+    response.set_cookie(
+        SESSION_COOKIE,
+        token,
+        max_age=3600,
+        httponly=True,
+        secure=PUBLIC_URL.startswith("https://"),
+        samesite="lax",
+        path="/",
+    )
+
+
+def auth_template(request: Request, template: str, **extra: Any) -> HTMLResponse:
+    context = {
+        "request": request,
+        "version": APP_VERSION,
+        "osap_url": OSAP_URL,
+        "login_url": "/login",
+        "register_url": "/register",
+        "user": None,
+        "user_name": "",
+        **extra,
+    }
+    return templates.TemplateResponse(request, template, context)
 
 
 def resource_belongs_to_work(work_id: str, resource_id: str) -> bool:
@@ -333,6 +374,7 @@ def render(
     notice: str = "",
     searched: bool = False,
 ) -> HTMLResponse:
+    token = token or request.cookies.get(SESSION_COOKIE, "")
     user = public_user(token)
     context = {
         "request": request,
@@ -353,8 +395,8 @@ def render(
         "authenticated": bool(user),
         "can_vote": bool(user and resource_id),
         "osap_url": OSAP_URL,
-        "login_url": f"{AUTH_WEB_URL}/auth/login",
-        "register_url": f"{AUTH_WEB_URL}/auth/register",
+        "login_url": "/login",
+        "register_url": "/register",
         "version": APP_VERSION,
         "osap_work_url": f"{OSAP_URL}/obra/{work_id}" if work_id else OSAP_URL,
     }
@@ -367,6 +409,139 @@ def health() -> dict[str, str]:
         cur.execute("SELECT 1 AS ok")
         cur.fetchone()
     return {"status": "ok"}
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request, next: str = "") -> HTMLResponse:
+    token = request.cookies.get(SESSION_COOKIE, "")
+    if token and public_user(token):
+        return RedirectResponse(safe_next(next), status_code=303)
+    return auth_template(request, "login.html", next=safe_next(next), error="")
+
+
+@app.post("/login", response_model=None)
+def login_submit(
+    request: Request,
+    email: str = Form(""),
+    password: str = Form(""),
+    next: str = Form("/"),
+) -> HTMLResponse | RedirectResponse:
+    email = email.strip()
+    if not email or not password:
+        return auth_template(
+            request,
+            "login.html",
+            next=safe_next(next),
+            error="Escribe tu email y tu contraseña.",
+        )
+    try:
+        response = httpx.post(
+            f"{AUTH_BASE}/auth/login",
+            json={"email": email, "password": password},
+            timeout=10.0,
+        )
+    except httpx.HTTPError:
+        return auth_template(
+            request,
+            "login.html",
+            next=safe_next(next),
+            error="No se pudo conectar con el servicio de cuentas.",
+        )
+    if response.status_code != 200:
+        return auth_template(
+            request, "login.html", next=safe_next(next), error=auth_error(response)
+        )
+    token = str(response.json().get("access_token") or "")
+    if not token:
+        return auth_template(
+            request, "login.html", next=safe_next(next), error="Respuesta de login no válida."
+        )
+    redirect = RedirectResponse(safe_next(next), status_code=303)
+    set_session_cookie(redirect, request, token)
+    return redirect
+
+
+@app.get("/register", response_class=HTMLResponse)
+def register_page(request: Request, next: str = "") -> HTMLResponse:
+    return auth_template(request, "register.html", next=safe_next(next), error="")
+
+
+@app.post("/register", response_model=None)
+def register_submit(
+    request: Request,
+    name: str = Form(""),
+    email: str = Form(""),
+    password: str = Form(""),
+    confirm: str = Form(""),
+    next: str = Form("/"),
+) -> HTMLResponse | RedirectResponse:
+    email, name = email.strip(), name.strip()
+    if not email or len(password) < 8:
+        return auth_template(
+            request,
+            "register.html",
+            next=safe_next(next),
+            error="Email válido y contraseña de al menos 8 caracteres.",
+        )
+    if password != confirm:
+        return auth_template(
+            request, "register.html", next=safe_next(next), error="Las contraseñas no coinciden."
+        )
+    try:
+        response = httpx.post(
+            f"{AUTH_BASE}/auth/register",
+            json={"email": email, "password": password, "name": name or None},
+            timeout=10.0,
+        )
+    except httpx.HTTPError:
+        return auth_template(
+            request,
+            "register.html",
+            next=safe_next(next),
+            error="No se pudo conectar con el servicio de cuentas.",
+        )
+    if response.status_code not in {200, 201}:
+        return auth_template(
+            request, "register.html", next=safe_next(next), error=auth_error(response)
+        )
+    payload = response.json()
+    verification = payload.get("verification_token")
+    if verification:
+        try:
+            httpx.post(
+                f"{AUTH_BASE}/auth/verify-email",
+                json={"token": verification},
+                timeout=10.0,
+            )
+        except httpx.HTTPError:
+            pass
+    try:
+        login_response = httpx.post(
+            f"{AUTH_BASE}/auth/login",
+            json={"email": email, "password": password},
+            timeout=10.0,
+        )
+    except httpx.HTTPError:
+        login_response = None
+    if login_response is not None and login_response.status_code == 200:
+        token = str(login_response.json().get("access_token") or "")
+        if token:
+            redirect = RedirectResponse(safe_next(next), status_code=303)
+            set_session_cookie(redirect, request, token)
+            return redirect
+    return auth_template(
+        request,
+        "register.html",
+        next=safe_next(next),
+        error="Cuenta creada. Revisa tu correo para activarla y después inicia sesión.",
+    )
+
+
+@app.get("/logout")
+def logout() -> RedirectResponse:
+    response = RedirectResponse("/", status_code=303)
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return response
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -463,6 +638,7 @@ def search(
             error="No se pudo consultar YouTube. Inténtalo de nuevo.",
             searched=True,
         )
+    token = token or request.cookies.get(SESSION_COOKIE, "")
     user = public_user(token)
     counts = vote_counts(resource_id, str(user.get("user_id")) if user else None)
     results = enrich(raw, query, counts, voice)
@@ -489,6 +665,7 @@ def search(
 
 @app.post("/vote", response_model=None)
 def vote(
+    request: Request,
     work_id: str = Form(...),
     resource_id: str = Form(...),
     video_id: str = Form(...),
@@ -503,6 +680,7 @@ def vote(
     composer: str = Form(""),
     token: str = Form(""),
 ) -> RedirectResponse | HTMLResponse:
+    token = token or request.cookies.get(SESSION_COOKIE, "")
     user = public_user(token)
     if not user:
         return HTMLResponse("Necesitas iniciar sesión en OSAP para votar.", status_code=401)

@@ -37,6 +37,7 @@
         {% if user %}
           <span class="dot" aria-hidden="true"></span>
           <span>{{ user_name }}</span>
+          <a class="session-link" href="/logout">Salir</a>
         {% else %}
           <a class="session-link" href="{{ login_url }}" target="_blank" rel="noopener">Iniciar sesión</a>
           <span aria-hidden="true">·</span>

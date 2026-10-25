@@ -14,14 +14,15 @@ the coordinated OSAP `5.7.0` release; that release only adds links to this app. 
 - Results ordered by community votes and textual similarity.
 - In-page YouTube player; users do not need to leave the result page to listen.
 - Votes (`useful` / `not useful`) stored in MySQL per representation, video, and voice.
-- Authentication delegated to `osap-auth`; the application does not store passwords.
+- Login and registration call `osap-auth` from the videos server and keep the access token in an HttpOnly session cookie; the application does not store passwords.
 - OSAP work and representation links can prefill the work title, composer, and resource.
 - The application checks with the public OSAP API that a representation belongs to the work
   before accepting a vote.
 
 ## What does not work or is not finished
 
-- **Authentication handoff is temporary.** The OSAP access token travels in the query string
+- **OSAP entry links still pass the access token in the query string** so opening from a work works without another login. The videos app also has its own login/register backed by `osap-auth` and an HttpOnly cookie.
+- **The direct token-in-URL handoff is temporary.** The OSAP access token travels in the query string
   so server-rendered forms can use it. That exposes it to browser history, logs, and `Referer`
   headers. It must be replaced by a one-time handoff or a short-lived `HttpOnly` cookie before
   this application is treated as production-grade.
