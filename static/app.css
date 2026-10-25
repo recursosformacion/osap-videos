@@ -68,6 +68,8 @@ a:hover { color: var(--osap-green-dark); }
 .breadcrumb { font-size: 13px; color: var(--osap-muted); }
 .breadcrumb a { text-decoration: none; }
 .session { font-size: 13px; color: var(--osap-muted); display: flex; align-items: center; gap: 8px; }
+.session-link { color: var(--osap-accent); font-weight: 600; text-decoration: none; }
+.session-link:hover { text-decoration: underline; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--osap-green); display: inline-block; }
 .content { max-width: 1120px; margin: 0 auto; padding: 28px 28px 64px; }
 

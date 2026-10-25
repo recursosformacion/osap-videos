@@ -38,7 +38,9 @@
           <span class="dot" aria-hidden="true"></span>
           <span>{{ user_name }}</span>
         {% else %}
-          <span>Sin sesión</span>
+          <a class="session-link" href="{{ login_url }}" target="_blank" rel="noopener">Iniciar sesión</a>
+          <span aria-hidden="true">·</span>
+          <a class="session-link" href="{{ register_url }}" target="_blank" rel="noopener">Crear cuenta</a>
         {% endif %}
       </div>
     </header>

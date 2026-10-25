@@ -21,9 +21,9 @@
 {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
 {% if notice %}<div class="notice ok">{{ notice }}</div>{% endif %}
 {% if token and not user %}
-  <div class="notice warn">La sesión de OSAP no es válida o ha caducado. Puedes buscar, pero no votar. <a href="{{ login_url }}">Iniciar sesión</a> · <a href="{{ register_url }}">Crear cuenta</a></div>
+  <div class="notice warn">La sesión de OSAP no es válida o ha caducado. Puedes buscar, pero no votar. <a href="{{ login_url }}" target="_blank" rel="noopener">Iniciar sesión</a> · <a href="{{ register_url }}" target="_blank" rel="noopener">Crear cuenta</a></div>
 {% elif not token %}
-  <div class="notice warn">Abre esta página desde la ficha de una obra en OSAP para votar con tu cuenta. <a href="{{ login_url }}">Iniciar sesión</a> · <a href="{{ register_url }}">Crear cuenta</a></div>
+  <div class="notice warn">Abre esta página desde la ficha de una obra en OSAP para votar con tu cuenta. <a href="{{ login_url }}" target="_blank" rel="noopener">Iniciar sesión</a> · <a href="{{ register_url }}" target="_blank" rel="noopener">Crear cuenta</a></div>
 {% elif user and not resource_id %}
   <div class="notice warn">Para votar, entra desde una representación concreta de la obra.</div>
 {% endif %}
