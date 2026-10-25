@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
+APP_VERSION = "0.2.0"
 LOGGER = logging.getLogger("osap_videos")
 sys.path.insert(0, str(BASE_DIR))
 
@@ -71,10 +72,11 @@ if MODULE_SRC is None or not MODULE_SRC.is_dir():
     raise RuntimeError("Configura module.src con la ruta a ai_recogeYouTube/src")
 sys.path.insert(0, str(MODULE_SRC))
 
-from ai_recogeyoutube.global_search import search_global
+from ai_recogeyoutube.global_search import VOICE_ALIASES, search_global
 
 DB = CONFIG["db"]
 AUTH_BASE = CONFIG["auth"]["base_url"]
+AUTH_PUBLIC_URL = str(CONFIG["auth"].get("public_url", "https://auth.openmusicrepository.com")).rstrip("/")
 PUBLIC_URL = CONFIG["server"]["public_url"]
 OSAP_URL = str(CONFIG.get("osap", {}).get("public_url", "https://app.openmusicrepository.com")).rstrip("/")
 OSAP_API_BASE = str(CONFIG.get("osap", {}).get("api_url", "http://127.0.0.1:8001/api/v1")).rstrip("/")
@@ -91,6 +93,7 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 VOICES = ["all", "song", "soprano", "alto", "tenor", "bass"]
 VOICE_LABELS = {
+    "unknown": "Voz no indicada",
     "all": "Todas las voces",
     "song": "Obra completa",
     "soprano": "Soprano",
@@ -103,7 +106,7 @@ MATERIAL_LABELS = {
     "sectional_rehearsal": "Ensayo por cuerdas",
     "full_performance": "Interpretación completa",
     "accompaniment": "Acompañamiento",
-    "unknown": "Material",
+    "unknown": "Material no indicado",
 }
 VOTE_VOICES = {"song", "soprano", "alto", "tenor", "bass"}
 
@@ -254,30 +257,52 @@ def vote_counts(resource_id: str, user_id: str | None) -> dict[tuple[str, str], 
     return counts
 
 
+def voice_match(text: str, voice: str) -> float:
+    aliases = VOICE_ALIASES.get(voice)
+    if not aliases:
+        return 0.0
+    padded = f" {normalize(text)} "
+    return 1.0 if any(f" {normalize(alias)} " in padded for alias in aliases) else 0.0
+
+
 def enrich(
-    results: list[dict[str, Any]], query: str, counts: dict[tuple[str, str], dict[str, int]]
+    results: list[dict[str, Any]],
+    query: str,
+    counts: dict[tuple[str, str], dict[str, int]],
+    voice: str,
 ) -> list[dict[str, Any]]:
     enriched: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
     for item in results:
         video_id = str(item.get("video_id") or "")
-        voice = str(item.get("voice") or "all")
-        if not video_id or (video_id, voice) in seen:
+        voice_guess = str(item.get("voice") or "unknown")
+        if not video_id or (video_id, voice_guess) in seen:
             continue
-        seen.add((video_id, voice))
-        count = counts.get((video_id, voice), {})
+        seen.add((video_id, voice_guess))
+        count = counts.get((video_id, voice_guess), {})
         title = str(item.get("video_title") or "")
         channel = str(item.get("channel") or "")
+        description = str(item.get("description") or "")
+        text_score = similarity(query, f"{title} {description[:700]}", channel)
+        if voice in {"soprano", "alto", "tenor", "bass"}:
+            score = round(text_score * 0.8 + voice_match(f"{title} {description}", voice) * 0.2, 4)
+        else:
+            score = text_score
+        material = str(item.get("material_type") or "unknown")
         enriched.append(
             {
                 **item,
                 "video_id": video_id,
-                "voice": voice,
-                "voice_label": VOICE_LABELS.get(voice, voice),
-                "material_label": MATERIAL_LABELS.get(
-                    str(item.get("material_type") or "unknown"), "Material"
+                "voice": voice_guess,
+                "voice_label": VOICE_LABELS.get(voice_guess, "Voz no indicada"),
+                "material_label": MATERIAL_LABELS.get(material, ""),
+                "material_known": material != "unknown",
+                "text_similarity": text_score,
+                "voice_match": bool(
+                    voice in {"soprano", "alto", "tenor", "bass"}
+                    and voice_match(f"{title} {description}", voice)
                 ),
-                "similarity": similarity(query, title, channel),
+                "similarity": score,
                 "approved": int(count.get("approved", 0)),
                 "rejected": int(count.get("rejected", 0)),
                 "mine": str(count.get("mine", "")),
@@ -285,9 +310,9 @@ def enrich(
         )
     enriched.sort(
         key=lambda r: (
+            -float(r["similarity"]),
             -int(r["approved"]),
             int(r["rejected"]),
-            -float(r["similarity"]),
             normalize(str(r["video_title"])),
         )
     )
@@ -328,6 +353,8 @@ def render(
         "authenticated": bool(user),
         "can_vote": bool(user and resource_id),
         "osap_url": OSAP_URL,
+        "register_url": f"{AUTH_PUBLIC_URL}/auth/register",
+        "version": APP_VERSION,
         "osap_work_url": f"{OSAP_URL}/obra/{work_id}" if work_id else OSAP_URL,
     }
     return templates.TemplateResponse(request, "index.html", context)
@@ -405,6 +432,7 @@ def search(
                 song=title,
                 author=composer,
                 voice=voice,
+                voice_terms=VOICE_ALIASES.get(voice, ()),
                 limit=30,
             )
         finally:
@@ -436,7 +464,7 @@ def search(
         )
     user = public_user(token)
     counts = vote_counts(resource_id, str(user.get("user_id")) if user else None)
-    results = enrich(raw, query, counts)
+    results = enrich(raw, query, counts, voice)
     notice = "" if results else "No se han encontrado vídeos para esta búsqueda."
     return render(
         request,
@@ -532,13 +560,3 @@ def vote(
     }
     params = urlencode({key: value for key, value in query.items() if value})
     return RedirectResponse(f"/works/{work_id}?{params}", status_code=303)
-
-
-
-
-
-
-
-
-
-

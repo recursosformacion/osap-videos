@@ -21,9 +21,9 @@
 {% if error %}<div class="notice error" role="alert">{{ error }}</div>{% endif %}
 {% if notice %}<div class="notice ok">{{ notice }}</div>{% endif %}
 {% if token and not user %}
-  <div class="notice warn">La sesión de OSAP no es válida o ha caducado. Puedes buscar, pero no votar.</div>
+  <div class="notice warn">La sesión de OSAP no es válida o ha caducado. Puedes buscar, pero no votar. <a href="{{ osap_url }}">Iniciar sesión</a> · <a href="{{ register_url }}">Crear cuenta</a></div>
 {% elif not token %}
-  <div class="notice warn">Abre esta página desde la ficha de una obra en OSAP para votar con tu cuenta.</div>
+  <div class="notice warn">Abre esta página desde la ficha de una obra en OSAP para votar con tu cuenta. <a href="{{ osap_url }}">Iniciar sesión</a> · <a href="{{ register_url }}">Crear cuenta</a></div>
 {% elif user and not resource_id %}
   <div class="notice warn">Para votar, entra desde una representación concreta de la obra.</div>
 {% endif %}
@@ -73,7 +73,7 @@
           <div class="result-meta">
             <span>{{ r.channel }}</span>
             <span class="sep">·</span>
-            <span class="badge">{{ r.material_label }}</span>
+            {% if r.material_known %}<span class="badge">{{ r.material_label }}</span>{% endif %}
             <span class="badge">{{ r.voice_label }}</span>
             <span class="badge sim">Similitud {{ (r.similarity * 100)|round(0)|int }}%</span>
           </div>
@@ -82,7 +82,7 @@
         <div class="result-side">
           <button class="btn btn-primary" type="button" data-play data-video="{{ r.video_id }}" data-title="{{ r.video_title }}">Reproducir aquí</button>
           <a class="btn btn-secondary" href="{{ r.url }}" target="_blank" rel="noopener">Ver en YouTube</a>
-          {% if resource_id %}
+          {% if resource_id and user %}
             <div class="vote-counts" aria-label="Votos">
               <span><strong>{{ r.approved }}</strong> válidos</span>
               <span><strong>{{ r.rejected }}</strong> no válidos</span>
@@ -101,12 +101,21 @@
               <input type="hidden" name="title" value="{{ title }}">
               <input type="hidden" name="composer" value="{{ composer }}">
               <div class="vote-row">
-                <button class="btn btn-vote {% if r.mine == 'approved' %}approved{% endif %}" type="submit" name="decision" value="approved" {% if not can_vote %}disabled title="Inicia sesión desde OSAP para votar"{% endif %}>Válido</button>
-                <button class="btn btn-vote {% if r.mine == 'rejected' %}rejected{% endif %}" type="submit" name="decision" value="rejected" {% if not can_vote %}disabled title="Inicia sesión desde OSAP para votar"{% endif %}>No válido</button>
+                <button class="btn btn-vote {% if r.mine == 'approved' %}approved{% endif %}" type="submit" name="decision" value="approved">Válido</button>
+                <button class="btn btn-vote {% if r.mine == 'rejected' %}rejected{% endif %}" type="submit" name="decision" value="rejected">No válido</button>
               </div>
               {% if r.mine %}<p class="hint">Tu voto: {{ 'válido' if r.mine == 'approved' else 'no válido' }}</p>{% endif %}
             </form>
+          {% elif resource_id %}
+            <p class="hint">Inicia sesión para votar.</p>
           {% endif %}
+          <div class="ad-slot" data-ad hidden>
+            <a href="{{ osap_url }}" target="_blank" rel="noopener noreferrer">
+              <span class="ad-kicker">OSAP</span>
+              <strong>OpenMusicRepository</strong>
+              <span>Partituras abiertas, obras y recursos musicales.</span>
+            </a>
+          </div>
         </div>
       </article>
     {% endfor %}

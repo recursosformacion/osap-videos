@@ -1,11 +1,17 @@
 const players = new WeakMap();
 
+function showAd(article) {
+  const ad = article.querySelector("[data-ad]");
+  if (ad) ad.hidden = false;
+}
+
 function play(button) {
   const article = button.closest(".result");
   if (!article) return;
   const mount = article.querySelector("[data-player]");
   const videoId = button.dataset.video;
   if (!mount || !videoId) return;
+  showAd(article);
   if (players.has(article)) {
     mount.hidden = false;
     return;

@@ -10,7 +10,7 @@ the coordinated OSAP `5.7.0` release; that release only adds links to this app. 
 
 ## What works
 
-- Live YouTube search using the `ai-recogeYouTube` module.
+- Live YouTube search using the `ai-recogeYouTube` module, including localized voice terms\n  (bass/bajo/baix/basse/basso…).
 - Results ordered by community votes and textual similarity.
 - In-page YouTube player; users do not need to leave the result page to listen.
 - Votes (`useful` / `not useful`) stored in MySQL per representation, video, and voice.
@@ -116,9 +116,9 @@ Secrets live only in `/opt/osap-videos/.env` and `config.yaml`; neither is commi
 
 ## Versioning
 
-The application version is **0.1.0** and is independent from the coordinated OSAP version.
+The application version is **0.2.0** and is independent from the coordinated OSAP version.
 OSAP **5.7.0** (B) publishes the video entry points. The videos application itself remains
-**0.1.0** and experimental; the two versions are intentionally independent.
+**0.2.0** and experimental; the two versions are intentionally independent.
 
 ---
 
@@ -133,12 +133,12 @@ Desplegado como **preview técnica** en `https://videos.openmusicrepository.com`
 una pieza de producción equiparable a los cuatro servicios principales de OSAP: no tiene
 handoff de autenticación definitivo, ni moderación, ni copias de seguridad propias, ni SLA.
 
-La versión del aplicativo es **0.1.0**. OSAP **5.7.0** (B) publica los enlaces desde la
+La versión del aplicativo es **0.2.0**. OSAP **5.7.0** (B) publica los enlaces desde la
 plataforma; la versión de la app se mantiene independiente y experimental.
 
 ## Qué hace
 
-- Busca en YouTube con el módulo `ai-recogeYouTube`.
+- Busca en YouTube con el módulo `ai-recogeYouTube`, incluyendo la voz en varios idiomas\n  (bajo, bass, baix, basse, basso…).
 - Ordena por votos de la comunidad y similitud textual.
 - Permite escuchar dentro de la página.
 - Guarda votos en MySQL por representación, vídeo y voz.
@@ -188,5 +188,3 @@ El script empaqueta la app y `ai-recogeYouTube`, actualiza `/opt/osap-videos`, i
 dependencias y reinicia `osap-videos.service`. No toca `config.yaml`, `.env`, MySQL ni nginx.
 El primer despliegue (base de datos, systemd, nginx y certificado) se hace una sola vez y se
 documenta en el historial operativo; las actualizaciones usan ese script.
-
-
