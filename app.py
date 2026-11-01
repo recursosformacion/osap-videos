@@ -18,7 +18,7 @@ import httpx
 import pymysql
 import yaml
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -91,6 +91,11 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="OSAP Vídeos", docs_url=None, redoc_url=None, lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> FileResponse:
+    return FileResponse(BASE_DIR / "static" / "favicon.ico")
 
 VOICES = ["all", "song", "soprano", "alto", "tenor", "bass"]
 VOICE_LABELS = {
