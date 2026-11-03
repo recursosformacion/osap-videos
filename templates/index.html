@@ -60,6 +60,15 @@
   </form>
 </section>
 
+<div class="ad-slot ad-wide" data-ad data-ad-placement="content_top" data-page-type="video_results"
+     data-work-id="{{ work_id }}" data-resource-id="{{ resource_id }}" hidden>
+  <a href="{{ osap_url }}" target="_blank" rel="noopener noreferrer">
+    <span class="ad-kicker">OSAP</span>
+    <strong>OpenMusicRepository</strong>
+    <span>Partituras abiertas, obras y recursos musicales.</span>
+  </a>
+</div>
+
 {% if results %}
   <div class="results-head">
     <h2>Resultados</h2>
@@ -109,7 +118,7 @@
           {% elif resource_id %}
             <p class="hint">Inicia sesión para votar.</p>
           {% endif %}
-          <div class="ad-slot" data-ad hidden>
+          <div class="ad-slot" data-ad data-ad-placement="video_content" data-page-type="video_results" data-work-id="{{ work_id }}" data-resource-id="{{ resource_id }}" hidden>
             <a href="{{ osap_url }}" target="_blank" rel="noopener noreferrer">
               <span class="ad-kicker">OSAP</span>
               <strong>OpenMusicRepository</strong>
@@ -126,3 +135,4 @@
 
 <p class="footnote">Los resultados proceden de la API de YouTube. OSAP no aloja los vídeos. Los votos son por representación y por voz o material.</p>
 {% endblock %}
+

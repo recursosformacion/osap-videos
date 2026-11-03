@@ -17,7 +17,7 @@ from urllib.parse import parse_qsl, quote, urlencode
 import httpx
 import pymysql
 import yaml
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -435,6 +435,22 @@ def render(
     return templates.TemplateResponse(request, "index.html", context)
 
 
+@app.post("/ads/compose")
+async def ads_compose(request: Request) -> Response:
+    """Proxy público a ai_publicidad vía OSAP; el token interno no llega al navegador."""
+    try:
+        payload = await request.json()
+        response = await httpx.AsyncClient(timeout=4.0).post(
+            f"{OSAP_API_BASE}/ads/compose",
+            json=payload,
+        )
+    except (httpx.HTTPError, ValueError):
+        return Response(status_code=204)
+    if response.status_code != 200 or "text/html" not in response.headers.get("content-type", ""):
+        return Response(status_code=204)
+    return Response(content=response.text, media_type="text/html; charset=utf-8")
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     with db() as conn, conn.cursor() as cur:
@@ -678,3 +694,4 @@ def vote(
     }
     params = urlencode({key: value for key, value in query.items() if value})
     return RedirectResponse(f"/works/{work_id}?{params}", status_code=303)
+
