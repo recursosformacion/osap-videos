@@ -2,9 +2,13 @@ const players = new WeakMap();
 
 async function loadAd(ad) {
   if (!ad) return;
+  ad.hidden = false;
+  const rect = ad.getBoundingClientRect();
+  if (!rect.width || !rect.height) {
+    ad.hidden = true;
+    return;
+  }
   if (!ad.dataset.loaded) {
-    ad.hidden = false;
-    const rect = ad.getBoundingClientRect();
     const pageType = ad.dataset.pageType || "video_results";
     const payload = {
       application: "osap",
@@ -55,6 +59,10 @@ function showWideAd() {
   return loadAd(document.querySelector(".ad-slot.ad-wide"));
 }
 
+function showRailAd() {
+  return loadAd(document.querySelector(".ad-rail [data-ad]"));
+}
+
 function play(button) {
   const article = button.closest(".result");
   if (!article) return;
@@ -76,6 +84,14 @@ function play(button) {
   mount.replaceChildren(frame);
   mount.hidden = false;
   players.set(article, frame);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    void showRailAd();
+  });
+} else {
+  void showRailAd();
 }
 
 document.addEventListener("click", (event) => {

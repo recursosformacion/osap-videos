@@ -13,29 +13,17 @@
 </head>
 <body>
 <div class="shell">
-  <aside class="sidebar">
-    <a class="brand" href="/">
-      <span class="brand-mark">V</span>
-      <span class="brand-text"><strong>VÍDEOS</strong><small>OSAP</small></span>
-    </a>
-    <nav class="nav-group" aria-label="Navegación principal">
-      <p class="nav-label">Aplicativo</p>
-      <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">Buscar vídeos</a>
-      <a class="nav-link" href="{{ osap_url }}" target="_blank" rel="noopener">Abrir OSAP</a>
-      <a class="nav-link" href="{{ osap_url }}" data-close-window>Cerrar ventana</a>
-    </nav>
-    <div class="sidebar-foot">
-      Aplicativo independiente de OSAP. Los vídeos pertenecen a sus autores y a YouTube.
-    </div>
-  </aside>
-
-  <div class="main">
-    <header class="topbar">
-      <div class="breadcrumb">
-        <a href="{{ osap_url }}">OSAP</a>
-        {% if work_id %}<span aria-hidden="true"> / </span><a href="{{ osap_work_url }}">Obra</a>{% endif %}
-        <span aria-hidden="true"> / </span><span>Vídeos</span>
-      </div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/">
+        <span class="brand-mark">V</span>
+        <span class="brand-text"><strong>VÍDEOS</strong><small>OSAP</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="nav-link {% if request.url.path == '/' %}active{% endif %}" href="/">Buscar vídeos</a>
+        <a class="nav-link" href="{{ osap_url }}" target="_blank" rel="noopener">Abrir OSAP</a>
+        <a class="nav-link" href="{{ osap_url }}" data-close-window>Cerrar ventana</a>
+      </nav>
       <div class="session">
         {% if user %}
           <span class="dot" aria-hidden="true"></span>
@@ -47,10 +35,32 @@
           <a class="session-link" href="{{ register_url }}">Crear cuenta</a>
         {% endif %}
       </div>
-    </header>
-    <main class="content">
-      {% block content %}{% endblock %}
-    </main>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="main">
+      <div class="breadcrumb">
+        <a href="{{ osap_url }}">OSAP</a>
+        {% if work_id %}<span aria-hidden="true"> / </span><a href="{{ osap_work_url }}">Obra</a>{% endif %}
+        <span aria-hidden="true"> / </span><span>Vídeos</span>
+      </div>
+      <main class="content">
+        {% block content %}{% endblock %}
+      </main>
+      <p class="footnote site-foot">Aplicativo independiente de OSAP. Los vídeos pertenecen a sus autores y a YouTube.</p>
+    </div>
+
+    <aside class="ad-rail" aria-label="Publicidad">
+      <div class="ad-slot ad-tall" data-ad data-ad-placement="sidebar" data-page-type="video_results"
+           data-work-id="{{ work_id }}" data-resource-id="{{ resource_id }}" hidden>
+        <a href="{{ osap_url }}" target="_blank" rel="noopener noreferrer">
+          <span class="ad-kicker">OSAP</span>
+          <strong>OpenMusicRepository</strong>
+          <span>Partituras abiertas, obras y recursos musicales.</span>
+        </a>
+      </div>
+    </aside>
   </div>
 </div>
 </body>
