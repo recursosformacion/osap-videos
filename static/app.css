@@ -233,3 +233,20 @@ input[type=text]:focus, select:focus { outline: 2px solid #b9d5c6; border-color:
   border-radius: 9px;
   background: #f4ecd9;
 }
+/* El HTML publicitario llega con estilos inline (fondo blanco). En el raíl vertical
+   se integra con el papel cálido del sitio y se quita el borde duro. */
+.ad-slot.ad-tall .ap-layout {
+  background: transparent !important;
+}
+.ad-slot.ad-tall .ap-ad-card {
+  background: #f4ecd9 !important;
+  border-color: rgba(95, 72, 31, .18) !important;
+  border-radius: 9px !important;
+  color: #5f481f !important;
+}
+.ad-slot.ad-tall .ap-ad-card strong {
+  color: #3f2f12 !important;
+}
+.ad-slot.ad-tall .ap-ad-card span {
+  color: #7a6335 !important;
+}
