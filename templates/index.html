@@ -32,7 +32,6 @@
   <form method="post" action="/search">
     <input type="hidden" name="work_id" value="{{ work_id }}">
     <input type="hidden" name="resource_id" value="{{ resource_id }}">
-    <input type="hidden" name="token" value="{{ token }}">
     <div class="form-grid">
       <div class="field span-4">
         <label for="title">Título de la obra</label>
@@ -99,8 +98,7 @@
             <form method="post" action="/vote">
               <input type="hidden" name="work_id" value="{{ work_id }}">
               <input type="hidden" name="resource_id" value="{{ resource_id }}">
-              <input type="hidden" name="token" value="{{ token }}">
-              <input type="hidden" name="video_id" value="{{ r.video_id }}">
+                        <input type="hidden" name="video_id" value="{{ r.video_id }}">
               <input type="hidden" name="video_url" value="{{ r.url }}">
               <input type="hidden" name="video_title" value="{{ r.video_title }}">
               <input type="hidden" name="channel" value="{{ r.channel }}">
