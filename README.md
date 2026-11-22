@@ -22,7 +22,7 @@ the coordinated OSAP `5.7.0` release; that release only adds links to this app. 
 ## What does not work or is not finished
 
 - OSAP entry links now submit the access token in the POST body to `/auth/handoff`; the endpoint checks the OSAP Origin, sets a short-lived HttpOnly cookie, and redirects to the work page. The token is not included in the navigation URL or rendered search/vote forms.
-- Vote submissions validate the Videos Origin before changing state. This is an Origin-based CSRF mitigation, not a complete CSRF-token framework.
+- Search and vote submissions validate the Videos Origin (search also consumes shared YouTube quota). This is an Origin-based CSRF mitigation, not a complete CSRF-token framework.
 - Search and voting still lack rate limiting, abuse detection, a moderation queue, and an admin UI for removing videos and votes. Search also consumes shared YouTube API quota.
 - Search results are not persisted. Only videos that receive a vote are stored, together with
   their representation relation.
