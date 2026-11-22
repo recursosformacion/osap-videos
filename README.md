@@ -21,13 +21,9 @@ the coordinated OSAP `5.7.0` release; that release only adds links to this app. 
 
 ## What does not work or is not finished
 
-- **OSAP entry links still pass the access token in the query string** so opening from a work works without another login. Auth login/register uses an authorized return URL and an HttpOnly videos cookie.
-- **The direct token-in-URL handoff is temporary.** The OSAP access token travels in the query string
-  so server-rendered forms can use it. That exposes it to browser history, logs, and `Referer`
-  headers. It must be replaced by a one-time handoff or a short-lived `HttpOnly` cookie before
-  this application is treated as production-grade.
-- There is no CSRF protection, rate limiting, abuse detection, moderation queue, or admin UI
-  for removing videos and votes.
+- OSAP entry links now submit the access token in the POST body to `/auth/handoff`; the endpoint checks the OSAP Origin, sets a short-lived HttpOnly cookie, and redirects to the work page. The token is not included in the navigation URL or rendered search/vote forms.
+- Vote submissions validate the Videos Origin before changing state. This is an Origin-based CSRF mitigation, not a complete CSRF-token framework.
+- Search and voting still lack rate limiting, abuse detection, a moderation queue, and an admin UI for removing videos and votes. Search also consumes shared YouTube API quota.
 - Search results are not persisted. Only videos that receive a vote are stored, together with
   their representation relation.
 - Work-level videos are not voted independently: a vote always belongs to a representation.
@@ -42,7 +38,7 @@ the coordinated OSAP `5.7.0` release; that release only adds links to this app. 
 
 ```text
 OSAP spa / public work page
-        │  link with work, resource, title, composer, token
+        │  POST handoff (token in body) → HttpOnly cookie; then work/resource query
         ▼
 videos.openmusicrepository.com  (FastAPI + Jinja, port 8400)
         │
