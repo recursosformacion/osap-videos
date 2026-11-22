@@ -75,6 +75,7 @@ python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m pip install -e ..\ai_recogeYouTube
 $env:YOUTUBE_API_KEY = "..."
+$env:AI_YOUTUBE_SRC = (Resolve-Path ..\ai_recogeYouTube\src).Path
 .\.venv\Scripts\python -m uvicorn app:app --host 127.0.0.1 --port 8400
 ```
 
