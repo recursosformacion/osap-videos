@@ -492,10 +492,24 @@ def auth_session(
     set_session_cookie(response, request, access_token)
     return response
 
+@app.post("/auth/handoff")
+def auth_handoff(
+    request: Request,
+    access_token: str = Form(""),
+    next_path: str = Form("/", alias="next"),
+) -> RedirectResponse:
+    """Intercambia un access token enviado en el cuerpo por una cookie HttpOnly."""
+    user = public_user(access_token)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    response = RedirectResponse(safe_next(next_path), status_code=303)
+    set_session_cookie(response, request, access_token)
+    return response
+
 
 @app.get("/", response_class=HTMLResponse)
-def home(request: Request, token: str = "") -> HTMLResponse:
-    return render(request, token=token)
+def home(request: Request) -> HTMLResponse:
+    return render(request)
 
 
 @app.get("/works/{work_id}", response_class=HTMLResponse)
@@ -506,7 +520,6 @@ def work_page(
     title: str = "",
     composer: str = "",
     voice: str = "all",
-    token: str = "",
     voted: str = "",
 ) -> HTMLResponse:
     notice = {"approved": "Voto positivo registrado.", "rejected": "Voto negativo registrado."}.get(
@@ -519,7 +532,6 @@ def work_page(
         title=title,
         composer=composer,
         voice=voice,
-        token=token,
         notice=notice,
     )
 
