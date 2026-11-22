@@ -552,6 +552,9 @@ def search(
     voice: str = Form("all"),
     token: str = Form(""),
 ) -> HTMLResponse:
+    # Search consumes the shared YouTube API quota; reject cross-origin form submissions.
+    if request.headers.get("origin", "").rstrip("/") != PUBLIC_URL:
+        raise HTTPException(status_code=403, detail="origen no autorizado")
     title, composer = title.strip(), composer.strip()
     voice = voice if voice in VOICES else "all"
     if not title and not composer:
