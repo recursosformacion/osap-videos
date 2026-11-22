@@ -485,6 +485,12 @@ def auth_session(
     access_token: str = Form(""),
     refresh_token: str = Form(""),
 ) -> JSONResponse:
+    # This legacy token-to-cookie endpoint must have the same login-CSRF
+    # protection as /auth/handoff; otherwise a foreign site can force a
+    # browser into the attacker's OSAP account.
+    origin = request.headers.get("origin", "").rstrip("/")
+    if not origin or origin != OSAP_URL:
+        return JSONResponse({"ok": False}, status_code=403)
     user = public_user(access_token)
     if not user:
         return JSONResponse({"ok": False}, status_code=401)
