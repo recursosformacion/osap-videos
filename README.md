@@ -48,6 +48,23 @@ videos.openmusicrepository.com  (FastAPI + Jinja, port 8400)
         └── MySQL osap_videos                 (videos, relations, votes)
 ```
 
+## Production configuration
+
+The systemd unit reads `/opt/osap-videos/.env`. It must contain at least:
+
+```dotenv
+OSAP_VIDEOS_DB_PASSWORD=<MySQL secret>
+OSAP_VIDEOS_PUBLIC_URL=https://videos.openmusicrepository.com
+OSAP_VIDEOS_AUTH_URL=http://127.0.0.1:8200
+OSAP_PUBLIC_URL=https://app.openmusicrepository.com
+OSAP_API_URL=http://127.0.0.1:8001/api/v1
+AI_YOUTUBE_SRC=/opt/ai_recogeYouTube/src
+YOUTUBE_API_KEY=<YouTube Data API key>
+```
+
+Adjust `AI_YOUTUBE_SRC` to the actual checkout location of `ai_recogeYouTube`.
+Do not copy the Windows development path from a local configuration to the server.
+
 ## Quick start (development)
 
 Requirements: Python 3.11+, MySQL/MariaDB, and the `ai-recogeYouTube` source tree.
