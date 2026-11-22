@@ -647,6 +647,9 @@ def vote(
     composer: str = Form(""),
     token: str = Form(""),
 ) -> RedirectResponse | HTMLResponse:
+    # Vote is a cookie-authenticated state change: reject cross-origin form submissions.
+    if request.headers.get("origin", "").rstrip("/") != PUBLIC_URL:
+        raise HTTPException(status_code=403, detail="origen no autorizado")
     token = token or request.cookies.get(SESSION_COOKIE, "")
     user = public_user(token)
     if not user:
