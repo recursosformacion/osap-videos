@@ -16,7 +16,7 @@ auth:
   base_url: http://127.0.0.1:8200
 
 module:
-  src: D:/Proyectos/AI_OSAP/ai_recogeYouTube/src
+  src: ""
 
 youtube:
   api_key_env: YOUTUBE_API_KEY
