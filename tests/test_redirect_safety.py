@@ -11,6 +11,8 @@ def test_safe_next_rejects_external_and_ambiguous_paths():
     assert safe_next("https://attacker.example/") == "/"
     assert safe_next("//attacker.example/") == "/"
     assert safe_next(r"/\\attacker.example/") == "/"
+    assert safe_next(r"/\attacker.example/") == "/"
+    assert safe_next("/path\attacker") == "/"
     assert safe_next("/path\\\\attacker") == "/"
     assert safe_next("/path\r\nLocation: https://attacker.example") == "/"
 
