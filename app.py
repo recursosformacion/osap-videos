@@ -508,6 +508,8 @@ def auth_handoff(
         return RedirectResponse("/login", status_code=303)
     response = RedirectResponse(safe_next(next_path), status_code=303)
     set_session_cookie(response, request, access_token)
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["Referrer-Policy"] = "no-referrer"
     return response
 
 
