@@ -201,7 +201,19 @@ def display_name(user: dict[str, Any] | None) -> str:
 
 
 def safe_next(value: str) -> str:
-    return value if value.startswith("/") and not value.startswith("//") else "/"
+    # Browsers normalize backslashes to slashes for HTTP(S) URLs. Reject
+    # ambiguous network-path references as well as control characters.
+    if (
+        not value.startswith("/")
+        or value.startswith("//")
+        or "\\" in value
+        or any(ord(char) < 32 or ord(char) == 127 for char in value)
+    ):
+        return "/"
+    parsed = urlsplit(value)
+    if parsed.scheme or parsed.netloc:
+        return "/"
+    return value
 
 
 def auth_error(response: httpx.Response) -> str:
