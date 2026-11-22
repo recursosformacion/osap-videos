@@ -499,6 +499,10 @@ def auth_handoff(
     next_path: str = Form("/", alias="next"),
 ) -> RedirectResponse:
     """Intercambia un access token enviado en el cuerpo por una cookie HttpOnly."""
+    # Prevent login-CSRF: only the configured OSAP application may initiate a handoff.
+    origin = request.headers.get("origin", "").rstrip("/")
+    if not origin or origin != OSAP_URL:
+        return RedirectResponse("/login", status_code=303)
     user = public_user(access_token)
     if not user:
         return RedirectResponse("/login", status_code=303)
